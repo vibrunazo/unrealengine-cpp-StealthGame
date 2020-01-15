@@ -4,7 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "PhysicsEngine/RadialForceComponent.h"
+//#include "PhysicsEngine/RadialForceComponent.h"
+#include "Components/SphereComponent.h"
 #include "Blackhole.generated.h"
 
 UCLASS()
@@ -19,10 +20,16 @@ public:
 protected:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* MeshComp;
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
-	URadialForceComponent* RadialComp;
-	//UPROPERTY(VisibleAnywhere, Category = "Components")
-	//USphereComponent* SphereComp;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components")
+	//URadialForceComponent* RadialComp;
+	UPROPERTY(VisibleAnywhere, Category = "Components")
+	USphereComponent* SphereComp;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Black Hole")
+	float BHForce = 30000.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Black Hole")
+	float BHStrength = -5000.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Black Hole")
+	bool bBHAccel = true;
 
 
 	// Called when the game starts or when spawned
