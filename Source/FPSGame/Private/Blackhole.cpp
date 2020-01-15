@@ -2,7 +2,7 @@
 
 
 #include "Blackhole.h"
-//#include "Components/SphereComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 //#include "UObject/Class.h"
 
@@ -31,7 +31,7 @@ void ABlackhole::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	UE_LOG(LogTemp, Warning, TEXT("Your message"));
+	//UE_LOG(LogTemp, Warning, TEXT("Your message"));
 }
 
 // Called every frame
@@ -46,7 +46,7 @@ void ABlackhole::Tick(float DeltaTime)
 	FVector Origin {0, 0, 0};
 
 	for (UPrimitiveComponent* Comp : OverlappingComponents) {
-		UE_LOG(LogTemp, Warning, TEXT("Comp: %s"), *Comp->GetName());
+		//UE_LOG(LogTemp, Warning, TEXT("Comp: %s"), *Comp->GetName());
 		Comp->AddRadialForce(GetActorLocation(), BHForce, BHStrength, ERadialImpulseFalloff::RIF_Linear, bBHAccel);
 	}
 
