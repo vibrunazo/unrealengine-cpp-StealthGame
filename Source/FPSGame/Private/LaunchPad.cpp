@@ -54,7 +54,7 @@ void ALaunchPad::HandleOverlap(UPrimitiveComponent * OverlappedComponent, AActor
 		MyChar->LaunchCharacter(LocalVector, true, true);
 		OnLaunch(OtherActor, OtherComp);
 	}
-	if (OtherComp && OtherComp->IsAnySimulatingPhysics())
+	else if (OtherComp && OtherComp->IsAnySimulatingPhysics())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Simulating yes"));
 		FRotator MyRot = GetActorRotation();
