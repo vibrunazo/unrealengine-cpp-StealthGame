@@ -8,6 +8,8 @@
 //#include "Engine/EngineTypes.h"
 #include "Perception/PawnSensingComponent.h"
 #include "FPSGameMode.h"
+#include "GameFramework/Controller.h"
+#include "AIController.h"
 
 // Sets default values
 AFPSAIGuard::AFPSAIGuard()
@@ -27,6 +29,44 @@ void AFPSAIGuard::BeginPlay()
 	PawnSensingComp->OnSeePawn.AddDynamic(this, &AFPSAIGuard::OnPawnSeen);
 	PawnSensingComp->OnHearNoise.AddDynamic(this, &AFPSAIGuard::OnHear);
 	OriginalRotation = GetActorRotation();
+	
+	GoToNextWaypoint();
+	UpdateDistanceToNext();
+}
+
+void AFPSAIGuard::GoToNextWaypoint()
+{
+	UE_LOG(LogTemp, Warning, TEXT("GoToWp: from %d to %d of %d"), CurrentWaypoint, NextWaypoint, Waypoints.Num());
+	if (Waypoints.Num() <= NextWaypoint) { return; }
+	AActor* Wp = Waypoints[NextWaypoint];
+	AController* MyController = GetController();
+	AAIController* MyAiCont = Cast<AAIController>(MyController);
+	MyAiCont->MoveToActor(Wp);
+	//DistanceToNext = FVector::Dist(GetActorLocation(), Waypoints[CurrentWaypoint]->GetActorLocation());
+	
+}
+
+void AFPSAIGuard::ArriveAtWaypoint()
+{
+	//UE_LOG(LogTemp, Warning, TEXT("Arrived: from %d to %d of %d"), CurrentWaypoint, NextWaypoint, Waypoints.Num());
+	CurrentWaypoint = NextWaypoint;
+	NextWaypoint++;
+	if (NextWaypoint >= Waypoints.Num()) { NextWaypoint = 0; }
+	OriginalRotation = GetActorRotation();
+	GoToNextWaypoint();
+	//UE_LOG(LogTemp, Warning, TEXT("After: from %d to %d of %d"), CurrentWaypoint, NextWaypoint, Waypoints.Num());
+}
+
+void AFPSAIGuard::PauseMove()
+{
+	AController* MyController = GetController();
+	AAIController* MyAiCont = Cast<AAIController>(MyController);
+	MyAiCont->MoveToActor(this);
+}
+
+void AFPSAIGuard::UpdateDistanceToNext()
+{
+	DistanceToNext = FVector::Dist(GetActorLocation(), Waypoints[NextWaypoint]->GetActorLocation());
 }
 
 void AFPSAIGuard::OnPawnSeen(APawn * SeenPawn)
@@ -66,6 +106,7 @@ void AFPSAIGuard::OnHear(APawn * InstigatorPawn, const FVector & Location, float
 	GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
 	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 4.0f);
 	SetGuardState(EAIState::Suspecious);
+	PauseMove();
 }
 
 void AFPSAIGuard::ResetOrientation()
@@ -76,6 +117,7 @@ void AFPSAIGuard::ResetOrientation()
 	}
 	SetActorRotation(OriginalRotation);
 	SetGuardState(EAIState::Idle);
+	GoToNextWaypoint();
 }
 
 void AFPSAIGuard::SetGuardState(EAIState NewState)
@@ -94,6 +136,12 @@ void AFPSAIGuard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	//PawnSensingComp->OnSeePawn.GetAllObjects();
+	UpdateDistanceToNext();
+	//UE_LOG(LogTemp, Warning, TEXT("Distance to next WP: %f"), DistanceToNext);
+	if (DistanceToNext < 100.0f && CurrentWaypoint != NextWaypoint)
+	{
+		ArriveAtWaypoint();
+	}
 	
 }
 
