@@ -16,6 +16,7 @@ AFPSAIGuard::AFPSAIGuard()
 	PrimaryActorTick.bCanEverTick = true;
 
 	PawnSensingComp = CreateAbstractDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensingComp"));
+	GuardState = EAIState::Idle;
 }
 
 // Called when the game starts or when spawned
@@ -30,22 +31,28 @@ void AFPSAIGuard::BeginPlay()
 
 void AFPSAIGuard::OnPawnSeen(APawn * SeenPawn)
 {
-	UE_LOG(LogTemp, Warning, TEXT("I see %s"), *SeenPawn->GetName());
+	//UE_LOG(LogTemp, Warning, TEXT("I see %s"), *SeenPawn->GetName());
 	if (SeenPawn == nullptr)
 	{
 		return;
 	}
-	DrawDebugSphere(GetWorld(), SeenPawn->GetActorLocation(), 32.0f, 12, FColor::Purple, false, 10.0f);
+	SetGuardState(EAIState::Alerted);
+	//DrawDebugSphere(GetWorld(), SeenPawn->GetActorLocation(), 32.0f, 12, FColor::Purple, false, 10.0f);
 	AFPSGameMode* GM = Cast<AFPSGameMode>(GetWorld()->GetAuthGameMode());
 	if (GM)
 	{
 		GM->CompleteMission(SeenPawn, false);
+		//UE_LOG(LogTemp, Warning, TEXT("GuardState: %d"), GuardState);
 	}
 }
 
 void AFPSAIGuard::OnHear(APawn * InstigatorPawn, const FVector & Location, float volume)
 {
-	DrawDebugSphere(GetWorld(), Location, 32.0f, 12, FColor::Green, false, 10.0f);
+	if (GuardState == EAIState::Alerted)
+	{
+		return;
+	}
+	//DrawDebugSphere(GetWorld(), Location, 32.0f, 12, FColor::Green, false, 10.0f);
 
 	//FVector LookLocation = Location;
 	//LookLocation.Z = GetActorLocation().Z;
@@ -58,11 +65,28 @@ void AFPSAIGuard::OnHear(APawn * InstigatorPawn, const FVector & Location, float
 	SetActorRotation(NewLookAt);
 	GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
 	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAIGuard::ResetOrientation, 4.0f);
+	SetGuardState(EAIState::Suspecious);
 }
 
 void AFPSAIGuard::ResetOrientation()
 {
+	if (GuardState == EAIState::Alerted)
+	{
+		return;
+	}
 	SetActorRotation(OriginalRotation);
+	SetGuardState(EAIState::Idle);
+}
+
+void AFPSAIGuard::SetGuardState(EAIState NewState)
+{
+	if (GuardState == NewState)
+	{
+		return;
+	}
+	GuardState = NewState;
+
+	OnStateChanged(GuardState);
 }
 
 // Called every frame
