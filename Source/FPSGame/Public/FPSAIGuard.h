@@ -36,7 +36,6 @@ protected:
 	int CurrentWaypoint = -1;
 	int NextWaypoint = 0;
 	float DistanceToNext = 0.0f;
-	void UpdateDistanceToNext();
 	void ArriveAtWaypoint();
 
 	UFUNCTION()
@@ -65,6 +64,7 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	void GoToNextWaypoint();
+	void UpdateDistanceToNext();
 	void PauseMove();
 
 };

@@ -31,7 +31,7 @@ void AFPSAIGuard::BeginPlay()
 	OriginalRotation = GetActorRotation();
 	
 	GoToNextWaypoint();
-	UpdateDistanceToNext();
+	//UpdateDistanceToNext();
 }
 
 void AFPSAIGuard::GoToNextWaypoint()
@@ -39,10 +39,12 @@ void AFPSAIGuard::GoToNextWaypoint()
 	UE_LOG(LogTemp, Warning, TEXT("GoToWp: from %d to %d of %d"), CurrentWaypoint, NextWaypoint, Waypoints.Num());
 	if (Waypoints.Num() <= NextWaypoint) { return; }
 	AActor* Wp = Waypoints[NextWaypoint];
+	if (Wp == nullptr) { return;  }
 	AController* MyController = GetController();
 	AAIController* MyAiCont = Cast<AAIController>(MyController);
+	if (!IsValid(MyAiCont)) { return;  }
 	MyAiCont->MoveToActor(Wp);
-	//DistanceToNext = FVector::Dist(GetActorLocation(), Waypoints[CurrentWaypoint]->GetActorLocation());
+	//DistanceToNext = FVector::Dist(GetActorLocation(), W*/aypoints[CurrentWaypoint]->GetActorLocation());
 	
 }
 
@@ -61,11 +63,13 @@ void AFPSAIGuard::PauseMove()
 {
 	AController* MyController = GetController();
 	AAIController* MyAiCont = Cast<AAIController>(MyController);
+	if (!IsValid(MyAiCont)) { return; }
 	MyAiCont->MoveToActor(this);
 }
 
 void AFPSAIGuard::UpdateDistanceToNext()
 {
+	if (Waypoints.Num() == 0) { return;  }
 	DistanceToNext = FVector::Dist(GetActorLocation(), Waypoints[NextWaypoint]->GetActorLocation());
 }
 
